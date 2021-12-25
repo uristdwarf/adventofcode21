@@ -9,6 +9,7 @@ import (
 	"sync"
 )
 
+// Original solution, see below function for a faster one
 func main() {
 	filename := "testinput"
 	if len(os.Args) == 2 {
@@ -17,6 +18,10 @@ func main() {
 	b, err := os.ReadFile(filename)
 	errCheck(err)
 	in := string(b)
+
+	// Faster solution, see function comment for details
+	Faster(in)
+	os.Exit(0)
 
 	strS := strings.Split(in, ",")
 	var intS []int
@@ -82,4 +87,37 @@ func errCheck(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+/*
+ The original solution was above, however it was quite slow
+ (took me ten minutes on my toaster), so I had to think of a
+ faster solution. Thanks to @Olaroll for making me think about
+ duplicate values.
+*/
+func Faster(in string) {
+	strS := strings.Split(in, ",")
+
+	m := make(map[int]int)
+	for i := 0; i <= 8; i++ {
+		m[i] = 0
+	}
+	for _, s := range strS {
+		n, _ := strconv.Atoi(s)
+		m[n] += 1
+	}
+
+	var result = len(strS) // Base result on input amount
+	// HOLY SHIT HOW FAST THIS IS
+	for day := 0; day < 256; day++ {
+		v := m[0] // Save value on start
+		// Shuffle the map
+		for i := 0; i <= 8; i++ {
+			m[i] = m[i+1]
+		}
+		m[6] += v
+		m[8] += v
+		result += v
+	}
+	fmt.Println(result)
 }
